@@ -9,7 +9,7 @@
       pkgs = import nixpkgs { inherit system; };
       tmux = pkgs.callPackage ./tmux {};
     in{
-      default = pkgs.callPackage ./wez { inherit tmux; wrapZSH = false; };
+      default = pkgs.callPackage ./wez { inherit tmux; wrapZSH = true; };
       wezterm = self.packages.${system}.default;
       inherit tmux;
     });
