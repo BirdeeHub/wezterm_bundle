@@ -19,8 +19,8 @@ config.window_padding = {
     top = 0,
     bottom = 0,
 }
--- config.window_decorations = "NONE" -- <-- fixes the black bar at bottom of tmux but breaks i3 border
-config.window_decorations = "RESIZE" -- <-- fixes the i3 border but has the black bar at bottom of tmux
+config.window_decorations = "NONE" -- <-- fixes the black bar at bottom of tmux but breaks i3 border
+-- config.window_decorations = "RESIZE" -- <-- fixes the i3 border but has the black bar at bottom of tmux
 config.window_close_confirmation = 'NeverPrompt'
 config.default_prog = fromnix.shellString
 config.adjust_window_size_when_changing_font_size = nil
