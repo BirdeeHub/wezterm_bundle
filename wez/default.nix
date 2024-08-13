@@ -6,11 +6,13 @@
   wezterm,
   zsh,
   nerdfonts,
+  callPackage,
+  nerdString ? "FiraMono",
 
-  zdotdir,
   tmux,
   autotx ? true,
-  custom_tmux_launcher_binsh ? null,
+  custom_tx_script ? null,
+  zdotdir ? null,
   wrapZSH ? false,
   extraPATH ? [ ],
   ...
@@ -19,15 +21,18 @@ let
 
   nerdpkg = nerdfonts.override {
     fonts = [
-      "FiraMono"
-      "Go-Mono"
+      nerdString
     ];
   };
 
-  # avoids infinite recursion by only needing the names
-  tmuxf = tmux.override (prev: if prev ? varnames then { varnames = prev.varnames ++ (builtins.attrNames passables.envVars); } else {});
+  fzdotdir = if zdotdir != null then zdotdir else callPackage ./zdot { };
 
-  tx = if custom_tmux_launcher_binsh != null then custom_tmux_launcher_binsh else writeShellScriptBin "tx" /*bash*/''
+  tmuxf = tmux.override (prev: {
+    isAlacritty = false;
+    passthruvars = (if prev ? passthruvars then prev.passthruvars else []) ++ (builtins.attrNames passables.envVars);
+  });
+
+  tx = if custom_tx_script != null then custom_tx_script else writeShellScriptBin "tx" /*bash*/''
     if ! echo "$PATH" | grep -q "${tmuxf}/bin"; then
       export PATH=${tmuxf}/bin:$PATH
     fi
@@ -50,14 +55,14 @@ let
       "-c"
       "exec ${tx}/bin/tx"
     ]);
-    inherit wrapZSH extraBin;
+    inherit nerdString wrapZSH extraBin;
     envVars = {
     } // (if wrapZSH then {
-      ZDOTDIR = "${zdotdir}";
+      ZDOTDIR = "${fzdotdir}";
     } else {});
   };
 
-  wezinit = /*lua*/ ''
+  wezinit = writeText "init.lua" /*lua*/ ''
     package.preload["nixStuff"] = function()
       -- mini nixCats plugin
       return ${(import ./utils.nix).luaTablePrinter passables}
@@ -67,7 +72,6 @@ let
     package.cpath = package.cpath .. ';' .. cfgdir .. '/?.so'
     local wezterm = require 'wezterm'
     wezterm.config_dir = cfgdir
-    wezterm.config_file = cfgdir .. "/init.lua"
     return require 'init'
   '';
 
@@ -84,5 +88,5 @@ in
 writeShellScriptBin "wezterm" ''
   export PATH="${lib.makeBinPath extraBin}:$PATH"
   declare -f __bp_install_after_session_init && source '${wezterm}/etc/profile.d/wezterm.sh'
-  exec ${wezterm}/bin/wezterm --config-file ${writeText "init.lua" wezinit} $@
+  exec ${wezterm}/bin/wezterm --config-file ${wezinit} $@
 ''

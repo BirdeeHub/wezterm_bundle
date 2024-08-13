@@ -5,13 +5,18 @@
 , new_tmux_conf ? ""
 , sourceSensible ? true
 , pluginSpecs ? null # <-- type list of plugin or spec [ drv1 { plugin = drv2; extraConfig = ""; } ]
-, varnames ? []
+, global_env_vars ? {}
+, passthruvars ? []
 , isAlacritty ? false
+, extraConfig ? ""
 , ...
 }: let
 
-  tmuxopts = if new_tmux_conf != "" then new_tmux_conf else /* tmux */''
+  plugins = if pluginSpecs != null then pluginSpecs else [
+    pkgs.tmuxPlugins.onedark-theme
+  ];
 
+  defaulttmuxopts = /*tmux*/''
     set -g display-panes-colour default
     set -g default-terminal ${if isAlacritty then "alacritty" else "xterm-256color"}
     set -ga terminal-overrides ${if isAlacritty then ''",alacritty:RGB"'' else ''",xterm-256color:RGB"''}
@@ -66,26 +71,27 @@
     bind -r -N "Move the visible part of the window right" M-l refresh-client -R 10
   '';
 
+
   # tmuxBoolToStr = value: if value then "on" else "off";
-  TMUXconf = pkgs.writeText "tmux.conf" (let
-    plugins = if pluginSpecs != null then pluginSpecs else [
-      pkgs.tmuxPlugins.onedark-theme
-    ];
-  in (/* tmux */ (if sourceSensible then ''
+  TMUXconf = pkgs.writeText "tmux.conf" (/* tmux */ (if sourceSensible then ''
     # ============================================= #
     # Start with defaults from the Sensible plugin  #
     # --------------------------------------------- #
     run-shell ${pkgs.tmuxPlugins.sensible.rtp}
     # ============================================= #
 
-    '' else "") + tmuxopts + ''
+    '' else "") + (if new_tmux_conf != "" then new_tmux_conf else defaulttmuxopts) + ''
 
-    ${if varnames != [] then ''
-    set-option -g update-environment "${builtins.concatStringsSep " " varnames}"
+    ${extraConfig}
+
+    ${if passthruvars != [] then ''
+    set-option -g update-environment "${builtins.concatStringsSep " " passthruvars}"
     '' else ''''}
 
+    ${addGlobalVars global_env_vars}
+
     ${configPlugins plugins}
-  ''));
+  '');
 
   configPlugins = plugins: (let
     pluginName = p: if lib.types.package.check p then p.pname else p.plugin.pname;
@@ -103,6 +109,10 @@
       # ============================================== #
     ''
   );
+
+  addGlobalVars = set: let
+    listed = builtins.attrValues (builtins.mapAttrs (k: v: ''set-environment -g ${k} "${v}"'') set);
+  in builtins.concatStringsSep "\n" listed;
 
   newTMUX = tmux.overrideAttrs (prev: {
     patches = prev.patches ++ [ (substituteAll {

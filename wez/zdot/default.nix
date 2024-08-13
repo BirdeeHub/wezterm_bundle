@@ -21,9 +21,6 @@ let
       if [[ -f ~/.zshrc ]]; then
         source ~/.zshrc
       fi
-      if [ -e "$HOME/.nix-profile/etc/profile.d/nix.sh" ]; then
-        . "$HOME/.nix-profile/etc/profile.d/nix.sh"
-      fi
 
       typeset -U path cdpath fpath manpath
 
