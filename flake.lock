@@ -1,5 +1,20 @@
 {
   "nodes": {
+    "nixToLua": {
+      "locked": {
+        "lastModified": 1725270859,
+        "narHash": "sha256-m9wqvp0qZ0X2LZITwQPm7nzFavqmAouqlpFtGiGIn5s=",
+        "owner": "BirdeeHub",
+        "repo": "nixToLua",
+        "rev": "0547007d13faafe775f364c17aca45ad9a876f34",
+        "type": "github"
+      },
+      "original": {
+        "owner": "BirdeeHub",
+        "repo": "nixToLua",
+        "type": "github"
+      }
+    },
     "nixpkgs": {
       "locked": {
         "lastModified": 1722802969,
@@ -18,6 +33,7 @@
     },
     "root": {
       "inputs": {
+        "nixToLua": "nixToLua",
         "nixpkgs": "nixpkgs"
       }
     }

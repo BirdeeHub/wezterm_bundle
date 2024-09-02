@@ -7,6 +7,7 @@
   zsh,
   nerdfonts,
   callPackage,
+  nixToLua,
   nerdString ? "FiraMono",
 
   tmux,
@@ -65,7 +66,7 @@ let
   wezinit = writeText "init.lua" /*lua*/ ''
     package.preload["nixStuff"] = function()
       -- mini nixCats plugin
-      return ${(import ./utils.nix).luaTablePrinter passables}
+      return ${nixToLua.toLua passables}
     end
     local cfgdir = require('nixStuff').cfgdir
     package.path = package.path .. ';' .. cfgdir .. '/?.lua;' .. cfgdir .. '/?/init.lua'
