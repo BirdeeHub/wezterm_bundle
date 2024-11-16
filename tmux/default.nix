@@ -1,40 +1,48 @@
-{pkgs
-, lib
+{ lib
 , substituteAll
 , tmux
-, new_tmux_conf ? ""
+, stdenv
+, tmuxPlugins
+, writeShellScriptBin
+, writeText
+
+# Store tmux socket under {file}`/run`, which is more
+# secure than {file}`/tmp`, but as a downside it doesn't
+# survive user logout.
+, secureSocket ? stdenv.isLinux
+
+# Start with defaults from the Sensible plugin
 , sourceSensible ? true
+
 , pluginSpecs ? null # <-- type list of plugin or spec [ drv1 { plugin = drv2; extraConfig = ""; } ]
 , global_env_vars ? {}
 , passthruvars ? []
-, isAlacritty ? false
+, prefix ? "C-Space"
+, term_string ? "xterm-256color"
 , extraConfig ? ""
+, new_tmux_opts ? ""
+, new_tmux_keys ? ""
 , ...
 }: let
 
   plugins = if pluginSpecs != null then pluginSpecs else [
-    pkgs.tmuxPlugins.onedark-theme
+    tmuxPlugins.onedark-theme
   ];
 
+  # tmuxBoolToStr = value: if value then "on" else "off";
   defaulttmuxopts = /*tmux*/''
     set -g display-panes-colour default
-    set -g default-terminal ${if isAlacritty then "alacritty" else "xterm-256color"}
-    set -ga terminal-overrides ${if isAlacritty then ''",alacritty:RGB"'' else ''",xterm-256color:RGB"''}
+    set -g default-terminal ${term_string}
+    set -ga terminal-overrides ",${term_string}:RGB"
+
+    unbind C-b
+    set-option -g prefix ${prefix}
+    set -g prefix ${prefix}
+    bind -N "Send the prefix key through to the application" \
+      ${prefix} send-prefix
 
     set  -g base-index      1
     setw -g pane-base-index 1
-
-    set -g status-keys vi
-    set -g mode-keys   vi
-
-    unbind C-b
-    set-option -g prefix C-Space
-    set -g prefix C-Space
-    bind -N "Send the prefix key through to the application" \
-      C-Space send-prefix
-
-    bind-key -N "Kill the current window" & kill-window
-    bind-key -N "Kill the current pane" x kill-pane
 
     set  -g mouse             on
     setw -g aggressive-resize off
@@ -43,6 +51,15 @@
     set  -g history-limit     2000
     set -gq allow-passthrough on
     set -g visual-activity off
+
+    set -g status-keys vi
+    set -g mode-keys   vi
+
+    '';
+    defaulttmuxkeys = /*tmux*/''
+
+    bind-key -N "Kill the current window" & kill-window
+    bind-key -N "Kill the current pane" x kill-pane
 
     bind-key -N "Select the previously current window" C-p last-window
     bind-key -N "Switch to the last client" P switch-client -l
@@ -71,27 +88,33 @@
     bind -r -N "Move the visible part of the window right" M-l refresh-client -R 10
   '';
 
-
-  # tmuxBoolToStr = value: if value then "on" else "off";
-  TMUXconf = pkgs.writeText "tmux.conf" (/* tmux */ (if sourceSensible then ''
+  TMUXconf = writeText "tmux.conf" (/* tmux */ (if sourceSensible then ''
     # ============================================= #
     # Start with defaults from the Sensible plugin  #
     # --------------------------------------------- #
-    run-shell ${pkgs.tmuxPlugins.sensible.rtp}
+    run-shell ${tmuxPlugins.sensible.rtp}
     # ============================================= #
 
-    '' else "") + (if new_tmux_conf != "" then new_tmux_conf else defaulttmuxopts) + ''
+    '' else "") + ''
+    ${if new_tmux_opts != "" then new_tmux_opts else defaulttmuxopts}
+
+    ${if new_tmux_keys != "" then new_tmux_keys else defaulttmuxkeys}
 
     ${extraConfig}
 
-    ${if passthruvars != [] then ''
-    set-option -g update-environment "${builtins.concatStringsSep " " passthruvars}"
-    '' else ''''}
+    ${addPassthruVars passthruvars}
 
     ${addGlobalVars global_env_vars}
 
     ${configPlugins plugins}
   '');
+
+  addGlobalVars = set: let
+    listed = builtins.attrValues (builtins.mapAttrs (k: v: ''set-environment -g ${k} "${v}"'') set);
+  in builtins.concatStringsSep "\n" listed;
+
+  addPassthruVars = ptv: lib.optionalString (ptv != [])
+    ''set-option -g update-environment "${builtins.concatStringsSep " " ptv}"'';
 
   configPlugins = plugins: (let
     pluginName = p: if lib.types.package.check p then p.pname else p.plugin.pname;
@@ -110,12 +133,8 @@
     ''
   );
 
-  addGlobalVars = set: let
-    listed = builtins.attrValues (builtins.mapAttrs (k: v: ''set-environment -g ${k} "${v}"'') set);
-  in builtins.concatStringsSep "\n" listed;
-
   newTMUX = tmux.overrideAttrs (prev: {
-    patches = prev.patches ++ [ (substituteAll {
+    patches = (lib.optionals (prev ? patches) prev.patches) ++ [ (substituteAll {
         # hardcode our config file.
         src = ./tmux_conf_var.diff;
         nixTmuxConf = TMUXconf;
@@ -123,12 +142,15 @@
     ];
   });
 
-  tmuxout = pkgs.writeShellScriptBin "tmux" /*bash*/''
+  userrunsocket = lib.optionalString secureSocket # bash
+    ''export TMUX_TMPDIR=''${TMUX_TMPDIR:-''${XDG_RUNTIME_DIR:-"/run/user/$(id -u)"}}'';
+
+  tmuxout = writeShellScriptBin "tmux" /*bash*/''
+    # If the right tmux isnt in the path, the colorscheme wont work.
     if ! echo "$PATH" | grep -q "${newTMUX}/bin"; then
-      # If the right tmux isnt in the path, the colorscheme wont work.
       export PATH="${newTMUX}/bin:$PATH"
     fi
-    export TMUX_TMPDIR=''${TMUX_TMPDIR:-''${XDG_RUNTIME_DIR:-"/run/user/$(id -u)"}}
+    ${userrunsocket}
     exec ${newTMUX}/bin/tmux $@
   '';
 

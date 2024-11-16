@@ -5,7 +5,7 @@
   fzf,
   zsh-autosuggestions,
   zsh-vi-mode,
-  oh-my-posh,
+  starship,
 }:
 let
   fzfinit = stdenv.mkDerivation {
@@ -52,7 +52,8 @@ let
       source ${zsh-autosuggestions}/share/zsh-autosuggestions/zsh-autosuggestions.zsh
       source ${zsh-vi-mode}/share/zsh-vi-mode/zsh-vi-mode.plugin.zsh
       source ${fzfinit}
-      eval "$(${oh-my-posh}/bin/oh-my-posh init zsh --config ${./atomic-emodipt.omp.json})"
+      export STARSHIP_CONFIG='${./starship.toml}'
+      eval "$(${starship}/bin/starship init zsh)"
     '';
   newzshenv = writeText "zshenv" /*bash*/''
     if [[ -f ~/.zshenv ]]; then
