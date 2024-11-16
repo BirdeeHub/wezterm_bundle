@@ -4,13 +4,13 @@ local wezterm = require "wezterm"
 
 return {
 	font = wezterm.font(fromnix.nerdString .. ' Nerd Font'),
-    font_dirs = fromnix.fontDirs,
+	font_dirs = fromnix.fontDirs,
 	font_size = 11,
 	color_scheme = "kanagawa_custom",
-    color_scheme_dirs = { wezterm.config_dir .. "/colors" },
-    set_environment_variables = fromnix.envVars,
+	color_scheme_dirs = { wezterm.config_dir .. "/colors" },
+	set_environment_variables = fromnix.envVars,
 	use_ime = true,
-    default_prog = fromnix.shellString,
+	default_prog = fromnix.shellString,
 	enable_kitty_keyboard = true,
 	window_background_opacity = 1,
 	window_decorations = "NONE",
