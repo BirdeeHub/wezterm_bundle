@@ -1,16 +1,18 @@
-local wezterm = require("wezterm")
-local sessionizer = require("sessionizer")
+local fromnix = require 'nixStuff'
+local wezterm = require "wezterm"
+-- local sessionizer = require("sessionizer")
 
 return {
-	font = wezterm.font_with_fallback({
-		"IosevkaTerm Nerd Font",
-		"Atkinson Hyperlegible",
-	}),
-	font_size = 14.0,
+	font = wezterm.font(fromnix.nerdString .. ' Nerd Font'),
+    font_dirs = fromnix.fontDirs,
+	font_size = 11,
 	color_scheme = "kanagawa_custom",
+    color_scheme_dirs = { wezterm.config_dir .. "/colors" },
+    set_environment_variables = fromnix.envVars,
 	use_ime = true,
+    default_prog = fromnix.shellString,
 	enable_kitty_keyboard = true,
-	window_background_opacity = 0.7,
+	window_background_opacity = 1,
 	window_decorations = "NONE",
 	window_close_confirmation = "NeverPrompt",
 	enable_tab_bar = false,
@@ -22,7 +24,8 @@ return {
 	default_cursor_style = "SteadyBlock",
 	warn_about_missing_glyphs = true,
 	tiling_desktop_environments = {
-		"Wayland Hyprland",
+		"Wayland sway",
+		"X11 i3",
 	},
 	window_padding = {
 		left = "0px",
@@ -65,55 +68,5 @@ return {
 			regex = "\\b\\w+@[\\w-]+(\\.[\\w-]+)+\\b",
 			format = "mailto:$0",
 		},
-	},
-	keys = {
-		{
-			key = "\\",
-			mods = "ALT",
-			action = wezterm.action.SplitHorizontal({ domain = "CurrentPaneDomain" }),
-		},
-		{
-			key = "Q",
-			mods = "ALT|SHIFT",
-			action = wezterm.action.CloseCurrentPane({ confirm = false }),
-		},
-		{
-			key = "RightArrow",
-			mods = "ALT|SHIFT",
-			action = wezterm.action.ActivatePaneDirection("Right"),
-		},
-		{
-			key = "LeftArrow",
-			mods = "ALT|SHIFT",
-			action = wezterm.action.ActivatePaneDirection("Left"),
-		},
-		{
-			key = "q",
-			mods = "ALT",
-			action = wezterm.action.CloseCurrentTab({ confirm = false }),
-		},
-		{
-			key = "a",
-			mods = "ALT",
-			action = wezterm.action.SpawnTab("DefaultDomain"),
-		},
-		{
-			key = "c",
-			mods = "ALT",
-			action = wezterm.action.ActivateCommandPalette,
-		},
-		{
-			key = "/",
-			mods = "ALT",
-			action = wezterm.action.Search("CurrentSelectionOrEmptyString"),
-		},
-		{
-			key = "s",
-			mods = "ALT",
-			action = wezterm.action.ShowTabNavigator,
-		},
-		-- Sessionizer Bindings
-		{ key = "f", mods = "ALT", action = wezterm.action_callback(sessionizer.toggle) },
-		-- { key = "F", mods = "ALT", action = wezterm.action_callback(sessionizer.resetCacheAndToggle) },
 	},
 }
