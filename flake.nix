@@ -15,7 +15,7 @@
         inherit tmux nixToLua;
         wrapZSH = true;
         wezterm = inputs.wezterm.packages.${system}.default.overrideAttrs {
-          preFixup = '''';
+          # preFixup = '''';
           # postFixup = ''
           #   patchelf \
           #     --add-rpath "${pkgs.libGL}/lib/libEGL.so.1:${pkgs.vulkan-loader}/lib/libvulkan.so.1" \
