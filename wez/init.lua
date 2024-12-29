@@ -16,6 +16,7 @@ return {
 	window_decorations = "NONE",
 	window_close_confirmation = "NeverPrompt",
 	enable_tab_bar = false,
+	front_end = "Software",
 	webgpu_power_preference = "HighPerformance",
 	check_for_updates = false,
 	enable_wayland = true,
