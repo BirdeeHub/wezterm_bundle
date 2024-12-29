@@ -3,7 +3,7 @@ local wezterm = require "wezterm"
 -- local sessionizer = require("sessionizer")
 
 return {
-	font = wezterm.font(fromnix.nerdString .. ' Nerd Font'),
+	font = wezterm.font(fromnix.fontString),
 	font_dirs = fromnix.fontDirs,
 	font_size = 11,
 	color_scheme = "kanagawa_custom",

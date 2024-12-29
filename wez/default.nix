@@ -1,14 +1,15 @@
 {
+  pkgs,
   lib,
   stdenv,
   writeShellScriptBin,
   writeText,
   wezterm,
   zsh,
-  nerdfonts,
   callPackage,
   nixToLua,
-  nerdString ? "FiraMono",
+  fontString ? "FiraMono Nerd Font",
+  fontpkg ? pkgs.nerd-fonts.fira-mono,
 
   tmux,
   autotx ? true,
@@ -19,12 +20,6 @@
   ...
 }:
 let
-
-  nerdpkg = nerdfonts.override {
-    fonts = [
-      nerdString
-    ];
-  };
 
   fzdotdir = if zdotdir != null then zdotdir else callPackage ./zdot { };
 
@@ -49,14 +44,14 @@ let
 
   passables = {
     cfgdir = "${wezCFG}";
-    fontDirs = [ "${nerdpkg}/share/fonts" ];
+    fontDirs = [ "${fontpkg}/share/fonts" ];
     shellString = [
       "${zsh}/bin/zsh"
     ] ++ (lib.optionals (tx != null && autotx) [
       "-c"
       "exec ${tx}/bin/tx"
     ]);
-    inherit nerdString wrapZSH extraBin;
+    inherit fontString wrapZSH extraBin;
     envVars = {
     } // (if wrapZSH then {
       ZDOTDIR = "${fzdotdir}";

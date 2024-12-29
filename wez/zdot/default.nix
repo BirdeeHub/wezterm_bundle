@@ -48,7 +48,7 @@ let
       setopt extendedglob
       unsetopt autocd nomatch
       bindkey -v
-      ZSH_AUTOSUGGEST_STRATEGY=(history completion)
+      ZSH_AUTOSUGGEST_STRATEGY=(completion history)
       source ${zsh-autosuggestions}/share/zsh-autosuggestions/zsh-autosuggestions.zsh
       source ${zsh-vi-mode}/share/zsh-vi-mode/zsh-vi-mode.plugin.zsh
       source ${fzfinit}
