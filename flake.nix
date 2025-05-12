@@ -9,19 +9,19 @@
   in {
     packages = forAllSys (system: let
       pkgs = import nixpkgs { inherit system; };
-      tmux = pkgs.callPackage ./tmux {};
+      tmux = pkgs.callPackage ./tmux.nix {};
     in{
       default = pkgs.callPackage ./wez {
         inherit tmux nixToLua;
         wrapZSH = true;
-        wezterm = inputs.wezterm.packages.${system}.default.overrideAttrs {
+        wezterm = pkgs.wezterm; #.packages.${system}.default.overrideAttrs {
           # preFixup = '''';
           # postFixup = ''
           #   patchelf \
           #     --add-rpath "${pkgs.libGL}/lib/libEGL.so.1:${pkgs.vulkan-loader}/lib/libvulkan.so.1" \
           #     $out/bin/wezterm-gui
           # '';
-        };
+        # };
       };
       wezterm = self.packages.${system}.default;
       inherit tmux;

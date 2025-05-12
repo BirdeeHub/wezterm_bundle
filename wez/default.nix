@@ -1,7 +1,8 @@
 {
   pkgs,
   lib,
-  stdenv,
+  runCommand,
+  makeWrapper,
   writeShellScriptBin,
   writeText,
   wezterm,
@@ -12,11 +13,13 @@
   fontpkg ? pkgs.nerd-fonts.fira-mono,
 
   tmux,
+  wezcfg ? ./.,
   autotx ? true,
   custom_tx_script ? null,
   zdotdir ? null,
   wrapZSH ? false,
   extraPATH ? [ ],
+  extraWrapperArgs ? [],
   ...
 }:
 let
@@ -29,9 +32,6 @@ let
   });
 
   tx = if custom_tx_script != null then custom_tx_script else writeShellScriptBin "tx" /*bash*/''
-    if ! echo "$PATH" | grep -q "${tmuxf}/bin"; then
-      export PATH=${tmuxf}/bin:$PATH
-    fi
     if [[ $(tmux list-sessions -F '#{?session_attached,1,0}' | grep -c '0') -ne 0 ]]; then
       selected_session=$(tmux list-sessions -F '#{?session_attached,,#{session_name}}' | tr '\n' ' ' | awk '{print $1}')
       exec tmux new-session -At $selected_session
@@ -43,7 +43,10 @@ let
   extraBin = [ tmuxf tx ] ++ extraPATH;
 
   passables = {
-    cfgdir = "${wezCFG}";
+    cfgdir = runCommand "wezCFG" {} ''
+      mkdir -p $out
+      cp -r ${wezcfg}/* $out/
+    '';
     fontDirs = [ "${fontpkg}/share/fonts" ];
     shellString = [
       "${zsh}/bin/zsh"
@@ -71,18 +74,20 @@ let
     return require 'init'
   '';
 
-  wezCFG = stdenv.mkDerivation {
-    name = "weztermCFG";
-    builder = writeText "builder.sh" /* bash */ ''
-      source $stdenv/setup
-      mkdir -p $out
-      cp -r ${./.}/* $out/
-    '';
-  };
-
+  wrapperArgs = [
+    "${wezterm}/bin/wezterm"
+    "${placeholder "out"}/bin/wezterm"
+    "--inherit-argv0"
+    "--prefix" "PATH" ":" "${lib.makeBinPath extraBin}"
+    "--add-flags" "--config-file ${wezinit}"
+    "--run" /*bash*/''
+      declare -f __bp_install_after_session_init && source '${wezterm}/etc/profile.d/wezterm.sh'
+    ''
+  ] ++ extraWrapperArgs;
 in
-writeShellScriptBin "wezterm" ''
-  export PATH="${lib.makeBinPath extraBin}:$PATH"
-  declare -f __bp_install_after_session_init && source '${wezterm}/etc/profile.d/wezterm.sh'
-  exec ${wezterm}/bin/wezterm --config-file ${wezinit} $@
+runCommand "wezterm" {
+  nativeBuildInputs = [ makeWrapper ];
+} ''
+  mkdir -p $out/bin
+  makeWrapper ${lib.escapeShellArgs wrapperArgs}
 ''
