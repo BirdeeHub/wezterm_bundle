@@ -6,7 +6,7 @@ return {
 	font = wezterm.font(fromnix.fontString),
 	font_dirs = fromnix.fontDirs,
 	font_size = 11,
-	color_scheme = "kanagawa_custom",
+	color_scheme = "Konsolas",
 	color_scheme_dirs = { wezterm.config_dir .. "/colors" },
 	set_environment_variables = fromnix.envVars,
 	use_ime = true,
