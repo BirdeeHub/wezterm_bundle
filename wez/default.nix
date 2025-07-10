@@ -9,9 +9,8 @@
   zsh,
   callPackage,
   nixToLua,
-  fontString ? "FiraMono Nerd Font",
   fontpkg ? pkgs.nerd-fonts.fira-mono,
-
+  fontString ? "FiraMono Nerd Font",
   tmux,
   wezcfg ? ./.,
   autotx ? true,
@@ -54,7 +53,7 @@ let
     inherit fontString wrapZSH extraBin;
     envVars = {
     } // (if wrapZSH then {
-      ZDOTDIR = "${if zdotdir != null then zdotdir else callPackage ../zdot { }}";
+      ZDOTDIR = if zdotdir != null then zdotdir else callPackage ../zdot { };
     } else {});
   };
 
