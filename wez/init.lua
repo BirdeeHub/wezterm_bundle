@@ -3,6 +3,24 @@ local wezterm = require "wezterm"
 -- local sessionizer = require("sessionizer")
 
 return {
+	hide_tab_bar_if_only_one_tab = true,
+	keys = {},
+	allow_square_glyphs_to_overflow_width = "WhenFollowedBySpace",
+	window_padding = {
+		left = 0,
+		right = -1,
+		top = 0,
+		bottom = -5,
+		-- left = "0px",
+		-- right = "0px",
+		-- top = "0px",
+		-- bottom = "0px",
+	},
+	adjust_window_size_when_changing_font_size = nil,
+	use_fancy_tab_bar = false,
+	show_tabs_in_tab_bar = false,
+	tab_bar_at_bottom = false,
+	command_palette_rows = 0,
 	font = wezterm.font(fromnix.fontString),
 	font_dirs = fromnix.fontDirs,
 	font_size = 11,
@@ -13,10 +31,12 @@ return {
 	default_prog = fromnix.shellString,
 	enable_kitty_keyboard = true,
 	window_background_opacity = 1,
-	window_decorations = "NONE",
+	window_decorations = "NONE", -- <-- fixes the bars around the tmux but breaks i3 border
 	window_close_confirmation = "NeverPrompt",
 	enable_tab_bar = false,
-	front_end = "Software",
+	-- front_end = "Software",
+	-- front_end = "OpenGL",
+	front_end = "WebGpu",
 	webgpu_power_preference = "HighPerformance",
 	check_for_updates = false,
 	enable_wayland = true,
@@ -25,14 +45,8 @@ return {
 	default_cursor_style = "SteadyBlock",
 	warn_about_missing_glyphs = true,
 	tiling_desktop_environments = {
-		"Wayland sway",
 		"X11 i3",
-	},
-	window_padding = {
-		left = "0px",
-		right = "0px",
-		top = "0px",
-		bottom = "0px",
+		"Wayland sway",
 	},
 	hyperlink_rules = {
 		-- Matches: a URL in parens: (URL)
