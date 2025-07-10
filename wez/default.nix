@@ -25,8 +25,7 @@
 let
 
   tmuxf = tmux.override (prev: {
-    isAlacritty = false;
-    passthruvars = (if prev ? passthruvars then prev.passthruvars else []) ++ (builtins.attrNames passables.envVars);
+    passthruvars = (prev.passthruvars or []) ++ (builtins.attrNames passables.envVars);
   });
 
   tx = if custom_tx_script != null then custom_tx_script else writeShellScriptBin "tx" /*bash*/''
