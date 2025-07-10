@@ -23,7 +23,9 @@
           # '';
         # };
       };
-      wezterm = self.packages.${system}.default;
+      wezterm = self.packages.${system}.default.override {
+        wrapZSH = false;
+      };
       inherit tmux;
     });
   };
