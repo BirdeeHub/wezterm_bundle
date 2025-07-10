@@ -24,8 +24,6 @@
 }:
 let
 
-  fzdotdir = if zdotdir != null then zdotdir else callPackage ./zdot { };
-
   tmuxf = tmux.override (prev: {
     isAlacritty = false;
     passthruvars = (if prev ? passthruvars then prev.passthruvars else []) ++ (builtins.attrNames passables.envVars);
@@ -57,7 +55,7 @@ let
     inherit fontString wrapZSH extraBin;
     envVars = {
     } // (if wrapZSH then {
-      ZDOTDIR = "${fzdotdir}";
+      ZDOTDIR = "${if zdotdir != null then zdotdir else callPackage ../zdot { }}";
     } else {});
   };
 
