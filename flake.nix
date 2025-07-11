@@ -25,6 +25,7 @@
       };
       wezterm = self.packages.${system}.default.override {
         wrapZSH = false;
+        autotx = false;
       };
       inherit tmux;
     });
