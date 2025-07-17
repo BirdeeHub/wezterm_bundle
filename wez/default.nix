@@ -17,6 +17,7 @@
   custom_tx_script ? null,
   zdotdir ? null,
   wrapZSH ? false,
+  gpuFrontEnd ? "OpenGL", # | "Software" | "WebGpu"
   extraPATH ? [ ],
   extraWrapperArgs ? [],
   ...
@@ -50,7 +51,7 @@ let
       "-c"
       "exec ${tx}/bin/tx"
     ]);
-    inherit fontString wrapZSH extraBin;
+    inherit gpuFrontEnd fontString wrapZSH extraBin;
     envVars = {
     } // (if wrapZSH then {
       ZDOTDIR = if zdotdir != null then zdotdir else callPackage ../zdot { };
