@@ -33,6 +33,8 @@
   # tmuxBoolToStr = value: if value then "on" else "off";
   defaulttmuxopts = /*tmux*/''
     set -g display-panes-colour default
+    set -ga update-environment TERM
+    set -ga update-environment TERM_PROGRAM
     set -g default-terminal ${term_string}
     set -ga terminal-overrides ",${term_string}:RGB"
 
