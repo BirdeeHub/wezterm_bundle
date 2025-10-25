@@ -2,7 +2,7 @@
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
     nixToLua.url = "github:BirdeeHub/nixToLua";
-    wezterm.url = "github:wez/wezterm?dir=nix";
+    # wezterm.url = "github:wez/wezterm?dir=nix";
   };
   outputs = { self, nixpkgs, nixToLua, ... }@inputs: let
     forAllSys = nixpkgs.lib.genAttrs nixpkgs.lib.platforms.all;

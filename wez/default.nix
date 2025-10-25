@@ -2,6 +2,7 @@
   pkgs,
   lib,
   runCommand,
+  symlinkJoin,
   makeWrapper,
   writeShellScriptBin,
   writeText,
@@ -75,19 +76,21 @@ let
   '';
 
   wrapperArgs = [
-    "${wezterm}/bin/wezterm"
-    "${placeholder "out"}/bin/wezterm"
     "--inherit-argv0"
     "--prefix" "PATH" ":" "${lib.makeBinPath extraBin}"
     "--add-flags" "--config-file ${wezinit}"
     "--run" /*bash*/''
-      declare -f __bp_install_after_session_init && source '${wezterm}/etc/profile.d/wezterm.sh'
+      declare -f __bp_install_after_session_init && source '${placeholder "out"}/etc/profile.d/wezterm.sh'
     ''
   ] ++ extraWrapperArgs;
 in
-runCommand "wezterm" {
+symlinkJoin {
+  name = "wezterm";
   nativeBuildInputs = [ makeWrapper ];
-} ''
-  mkdir -p $out/bin
-  makeWrapper ${lib.escapeShellArgs wrapperArgs}
-''
+  paths = [ wezterm ];
+  postBuild = ''
+    mkdir -p $out/bin
+    wrapProgram $out/bin/wezterm ${lib.escapeShellArgs wrapperArgs}
+    wrapProgram $out/bin/wezterm-gui ${lib.escapeShellArgs wrapperArgs}
+  '';
+}
