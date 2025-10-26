@@ -89,7 +89,6 @@ symlinkJoin {
   nativeBuildInputs = [ makeWrapper ];
   paths = [ wezterm ];
   postBuild = ''
-    mkdir -p $out/bin
     wrapProgram $out/bin/wezterm ${lib.escapeShellArgs wrapperArgs}
     wrapProgram $out/bin/wezterm-gui ${lib.escapeShellArgs wrapperArgs}
   '';
