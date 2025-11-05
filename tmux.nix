@@ -48,17 +48,17 @@
 
   # tmuxBoolToStr = value: if value then "on" else "off";
   defaulttmuxopts = /*tmux*/''
-    set -g display-panes-colour default
-    set -ga update-environment TERM
-    set -ga update-environment TERM_PROGRAM
-    set -g default-terminal ${term_string}
-    set -ga terminal-overrides ",${term_string}:RGB"
-
     unbind C-b
     set-option -g prefix ${prefix}
     set -g prefix ${prefix}
     bind -N "Send the prefix key through to the application" \
       ${prefix} send-prefix
+
+    set -g display-panes-colour default
+    set -ga update-environment TERM
+    set -ga update-environment TERM_PROGRAM
+    set -g default-terminal ${term_string}
+    set -ga terminal-overrides ",${term_string}:RGB"
 
     set  -g base-index      1
     setw -g pane-base-index 1
@@ -135,7 +135,7 @@
   in builtins.concatStringsSep "\n" listed;
 
   addPassthruVars = ptv: lib.optionalString (ptv != [])
-    ''set-option -g update-environment "${builtins.concatStringsSep " " ptv}"'';
+    ''set-option -ga update-environment "${builtins.concatStringsSep " " ptv}"'';
 
   configPlugins = plugins: (let
     pluginName = p: if lib.types.package.check p then p.pname else p.plugin.pname;
