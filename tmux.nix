@@ -33,6 +33,7 @@
         pluginName = "tmux-navigate";
         version = "master";
         src = ./tmux-navigate;
+        rtpFilePath = "tmux-navigate.tmux";
       });
       extraConfig = /*tmux*/ ''
         set -g @navigate-left  'h'
