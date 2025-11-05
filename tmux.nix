@@ -15,12 +15,13 @@
 , sourceSensible ? true
 , tmux-navigate-src ? null
 
-, pluginSpecs ? null # <-- type list of plugin or spec [ drv1 { plugin = drv2; extraConfig = ""; } ]
+, pluginSpecs ? null # <-- type list of plugin or spec [ drv1 { plugin = drv2; configBefore = ""; configAfter = ""; } ]
 , global_env_vars ? {}
 , passthruvars ? []
 , prefix ? "C-Space"
 , term_string ? "xterm-256color"
-, extraConfig ? ""
+, configBefore ? ""
+, configAfter ? ""
 , new_tmux_opts ? ""
 , new_tmux_keys ? ""
 , extraWrapperArgs ? []
@@ -36,7 +37,7 @@
       src = tmux-navigate-src;
       rtpFilePath = "tmux-navigate.tmux";
     });
-    extraConfig = /*tmux*/ ''
+    configBefore = /*tmux*/ ''
       set -g @navigate-left  'h'
       set -g @navigate-down  'j'
       set -g @navigate-up    'k'
@@ -118,13 +119,15 @@
 
     ${if new_tmux_keys != "" then new_tmux_keys else defaulttmuxkeys}
 
-    ${extraConfig}
+    ${configBefore}
 
     ${addPassthruVars passthruvars}
 
     ${addGlobalVars global_env_vars}
 
     ${configPlugins plugins}
+
+    ${configAfter}
   '');
 
   addGlobalVars = set: let
@@ -137,14 +140,17 @@
   configPlugins = plugins: (let
     pluginName = p: if lib.types.package.check p then p.pname else p.plugin.pname;
     pluginRTP = p: if lib.types.package.check p then p.rtp else p.plugin.rtp;
+    pluginConfigPre = p: if lib.types.package.check p then "" else p.configBefore;
+    pluginConfigPost = p: if lib.types.package.check p then "" else p.configAfter;
   in
     if plugins == [] || ! (builtins.isList plugins) then "" else ''
       # ============================================== #
       ${(lib.concatMapStringsSep "\n\n" (p: ''
         # ${pluginName p}
         # ---------------------
-        ${p.extraConfig or ""}
+        ${pluginConfigPre p}
         run-shell ${pluginRTP p}
+        ${pluginConfigPost p}
         # ---------------------
       '') plugins)}
       # ============================================== #
