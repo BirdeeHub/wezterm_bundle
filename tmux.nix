@@ -140,8 +140,8 @@
   configPlugins = plugins: (let
     pluginName = p: if lib.types.package.check p then p.pname else p.plugin.pname;
     pluginRTP = p: if lib.types.package.check p then p.rtp else p.plugin.rtp;
-    pluginConfigPre = p: if lib.types.package.check p then "" else p.configBefore;
-    pluginConfigPost = p: if lib.types.package.check p then "" else p.configAfter;
+    pluginConfigPre = p: if lib.types.package.check p then "" else p.configBefore or "";
+    pluginConfigPost = p: if lib.types.package.check p then "" else p.configAfter or "";
   in
     if plugins == [] || ! (builtins.isList plugins) then "" else ''
       # ============================================== #
