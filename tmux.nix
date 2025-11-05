@@ -28,9 +28,9 @@
 , ...
 }: let
 
-  plugins = if pluginSpecs != null then pluginSpecs else [
+  plugins = (if pluginSpecs != null then pluginSpecs else [
     tmuxPlugins.onedark-theme
-  ] ++ lib.optional (tmux-navigate-src != null) {
+  ]) ++ lib.optional (tmux-navigate-src != null) {
     plugin = (tmuxPlugins.mkTmuxPlugin {
       pluginName = "tmux-navigate";
       version = "master";
