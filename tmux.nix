@@ -28,6 +28,20 @@
 
   plugins = if pluginSpecs != null then pluginSpecs else [
     tmuxPlugins.onedark-theme
+    {
+      plugin = (tmuxPlugins.mkTmuxPlugin {
+        pluginName = "tmux-navigate";
+        version = "master";
+        src = ./tmux-navigate;
+      });
+      extraConfig = /*tmux*/ ''
+        set -g @navigate-left  'h'
+        set -g @navigate-down  'j'
+        set -g @navigate-up    'k'
+        set -g @navigate-right 'l'
+        set -g @navigate-back  'C-p'
+      '';
+    }
   ];
 
   # tmuxBoolToStr = value: if value then "on" else "off";
@@ -70,10 +84,10 @@
     bind-key -T copy-mode-vi 'v' send -X begin-selection
     bind-key -T copy-mode-vi 'y' send -X copy-selection-and-cancel
 
-    bind -N "Select pane to the left of the active pane" h select-pane -L
-    bind -N "Select pane below the active pane" j select-pane -D
-    bind -N "Select pane above the active pane" k select-pane -U
-    bind -N "Select pane to the right of the active pane" l select-pane -R
+    # bind -N "Select pane to the left of the active pane" h select-pane -L
+    # bind -N "Select pane below the active pane" j select-pane -D
+    # bind -N "Select pane above the active pane" k select-pane -U
+    # bind -N "Select pane to the right of the active pane" l select-pane -R
 
     bind -r -N "Resize the pane left" H resize-pane -L
     bind -r -N "Resize the pane down" J resize-pane -D
