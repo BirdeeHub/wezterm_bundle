@@ -13,6 +13,7 @@
 
 # Start with defaults from the Sensible plugin
 , sourceSensible ? true
+, tmux-navigate-src ? null
 
 , pluginSpecs ? null # <-- type list of plugin or spec [ drv1 { plugin = drv2; extraConfig = ""; } ]
 , global_env_vars ? {}
@@ -28,7 +29,21 @@
 
   plugins = if pluginSpecs != null then pluginSpecs else [
     tmuxPlugins.onedark-theme
-  ];
+  ] ++ lib.optional (tmux-navigate-src != null) {
+    plugin = (tmuxPlugins.mkTmuxPlugin {
+      pluginName = "tmux-navigate";
+      version = "master";
+      src = tmux-navigate-src;
+      rtpFilePath = "tmux-navigate.tmux";
+    });
+    extraConfig = /*tmux*/ ''
+      set -g @navigate-left  'h'
+      set -g @navigate-down  'j'
+      set -g @navigate-up    'k'
+      set -g @navigate-right 'l'
+      set -g @navigate-back  'C-p'
+    '';
+  };
 
   # tmuxBoolToStr = value: if value then "on" else "off";
   defaulttmuxopts = /*tmux*/''
@@ -58,37 +73,37 @@
     set -g status-keys vi
     set -g mode-keys   vi
 
-    '';
-    defaulttmuxkeys = /*tmux*/''
+  '';
+  defaulttmuxkeys = /*tmux*/''
+  bind-key -N "Kill the current window" & kill-window
+  bind-key -N "Kill the current pane" x kill-pane
 
-    bind-key -N "Kill the current window" & kill-window
-    bind-key -N "Kill the current pane" x kill-pane
+  bind-key -N "Select the previously current window" C-p last-window
+  bind-key -N "Switch to the last client" P switch-client -l
+  set-window-option -g mode-keys vi
+  bind-key -T copy-mode-vi 'v' send -X begin-selection
+  bind-key -T copy-mode-vi 'y' send -X copy-selection-and-cancel
 
-    bind-key -N "Select the previously current window" C-p last-window
-    bind-key -N "Switch to the last client" P switch-client -l
-    set-window-option -g mode-keys vi
-    bind-key -T copy-mode-vi 'v' send -X begin-selection
-    bind-key -T copy-mode-vi 'y' send -X copy-selection-and-cancel
+  bind -r -N "Resize the pane left" H resize-pane -L
+  bind -r -N "Resize the pane down" J resize-pane -D
+  bind -r -N "Resize the pane up" K resize-pane -U
+  bind -r -N "Resize the pane right" L resize-pane -R
 
-    bind -N "Select pane to the left of the active pane" h select-pane -L
-    bind -N "Select pane below the active pane" j select-pane -D
-    bind -N "Select pane above the active pane" k select-pane -U
-    bind -N "Select pane to the right of the active pane" l select-pane -R
+  bind -r -N "Resize the pane left by 5" C-H resize-pane -L 5
+  bind -r -N "Resize the pane down by 5" C-J resize-pane -D 5
+  bind -r -N "Resize the pane up by 5" C-K resize-pane -U 5
+  bind -r -N "Resize the pane right by 5" C-L resize-pane -R 5
 
-    bind -r -N "Resize the pane left" H resize-pane -L
-    bind -r -N "Resize the pane down" J resize-pane -D
-    bind -r -N "Resize the pane up" K resize-pane -U
-    bind -r -N "Resize the pane right" L resize-pane -R
+  bind -r -N "Move the visible part of the window left" M-h refresh-client -L 10
+  bind -r -N "Move the visible part of the window up" M-j refresh-client -U 10
+  bind -r -N "Move the visible part of the window down" M-k refresh-client -D 10
+  bind -r -N "Move the visible part of the window right" M-l refresh-client -R 10
 
-    bind -r -N "Resize the pane left by 5" C-H resize-pane -L 5
-    bind -r -N "Resize the pane down by 5" C-J resize-pane -D 5
-    bind -r -N "Resize the pane up by 5" C-K resize-pane -U 5
-    bind -r -N "Resize the pane right by 5" C-L resize-pane -R 5
-
-    bind -r -N "Move the visible part of the window left" M-h refresh-client -L 10
-    bind -r -N "Move the visible part of the window up" M-j refresh-client -U 10
-    bind -r -N "Move the visible part of the window down" M-k refresh-client -D 10
-    bind -r -N "Move the visible part of the window right" M-l refresh-client -R 10
+  '' + lib.optionalString (tmux-navigate-src == null) /*tmux*/''
+  bind -N "Select pane to the left of the active pane" h select-pane -L
+  bind -N "Select pane below the active pane" j select-pane -D
+  bind -N "Select pane above the active pane" k select-pane -U
+  bind -N "Select pane to the right of the active pane" l select-pane -R
   '';
 
   TMUXconf = writeText "tmux.conf" (/* tmux */ (if sourceSensible then ''
