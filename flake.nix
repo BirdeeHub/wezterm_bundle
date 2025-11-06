@@ -8,6 +8,7 @@
     };
     wrappers = {
       url = "github:BirdeeHub/wrappers/rewrite_lib";
+      # url = "git+file:/home/birdee/Projects/wrappers";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
