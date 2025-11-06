@@ -81,7 +81,7 @@
 
   bind-key -N "Select the previously current window" C-p last-window
   bind-key -N "Switch to the last client" P switch-client -l
-  set-window-option -g mode-keys vi
+
   bind-key -T copy-mode-vi 'v' send -X begin-selection
   bind-key -T copy-mode-vi 'y' send -X copy-selection-and-cancel
 
