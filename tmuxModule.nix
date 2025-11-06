@@ -236,5 +236,6 @@ in {
     };
     wrap.args."--run" = lib.mkIf config.secureSocket ''export TMUX_TMPDIR=''${TMUX_TMPDIR:-''${XDG_RUNTIME_DIR:-"/run/user/$(id -u)"}}'';
     package = config.pkgs.tmux;
+    meta.maintainers = [ lib.maintainers.birdee ];
   };
 }
