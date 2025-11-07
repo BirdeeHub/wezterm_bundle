@@ -62,11 +62,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1762469816,
-        "narHash": "sha256-iO9xEZPW/6X8iFSmizaXRomi3P7rQEnRs3JpRd9lw2Q=",
+        "lastModified": 1762479252,
+        "narHash": "sha256-Az0ms9VhgUymXn5xMIFwbAwyWOzSwt2WcVxHE/layfw=",
         "owner": "BirdeeHub",
         "repo": "wrappers",
-        "rev": "1315e63d1dd0f887bea43e276bc962b16bb5ea3c",
+        "rev": "1ec05b97556ae1a2b23bfa7e9c27bc3d4761ae69",
         "type": "github"
       },
       "original": {

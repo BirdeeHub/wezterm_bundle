@@ -147,7 +147,7 @@ in {
     shell = lib.mkOption {
       type = lib.types.nullOr lib.types.str;
       default = null;
-      description = "Value for set -g status-keys.";
+      description = "set -g default-shell";
     };
     statusKeys = lib.mkOption {
       type = lib.types.str;
