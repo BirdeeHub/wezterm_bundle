@@ -1,19 +1,3 @@
-# module code to include with root installs
-# This is required so that tmux can write to /var/run/utmp
-# (which can be queried with who to display currently connected user sessions).
-# Note, this will add a guid wrapper for the group utmp!
-# see programs.tmux.withUtempter
-
-# config.security.wrappers = {
-#   utempter = {
-#     source = "${pkgs.libutempter}/lib/utempter/utempter";
-#     owner = "root";
-#     group = "utmp";
-#     setuid = false;
-#     setgid = true;
-#   };
-# };
-
 { config, wlib, lib, ... }: let
   addGlobalVars = set: let
     listed = builtins.attrValues (builtins.mapAttrs (k: v: ''set-environment -g ${k} "${v}"'') set);
