@@ -14,7 +14,7 @@
   outputs = { self, nixpkgs, nixToLua, ... }@inputs: let
     forAllSys = nixpkgs.lib.genAttrs nixpkgs.lib.platforms.all;
   in {
-    modules.tmux = import ./tmuxModule.nix inputs;
+    modules.tmux = import ./tmux.nix inputs;
     wrapperModules = (inputs.wrappers.lib.evalModule self.modules.tmux).config;
     packages = forAllSys (system: let
       pkgs = import nixpkgs { inherit system; };
