@@ -7,28 +7,24 @@
       flake = false;
     };
     wrappers = {
-      url = "github:BirdeeHub/wrappers/rewrite_lib";
-      # url = "git+file:/home/birdee/Projects/wrappers";
+      url = "github:BirdeeHub/nix-wrapper-modules";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
   outputs = { self, nixpkgs, nixToLua, ... }@inputs: let
     forAllSys = nixpkgs.lib.genAttrs nixpkgs.lib.platforms.all;
   in {
-    wrappers = {
-    };
+    modules.tmux = import ./tmuxModule.nix inputs;
+    wrapperModules = (inputs.wrappers.lib.evalModule self.modules.tmux).config;
     packages = forAllSys (system: let
       pkgs = import nixpkgs { inherit system; };
-      tmux = pkgs.callPackage ./tmux.nix {
-        inherit (inputs) tmux-navigate-src;
-      };
+      tmux = (inputs.wrappers.lib.evalModule self.modules.tmux).config.wrap { inherit pkgs;};
     in{
       default = pkgs.callPackage ./wez {
         inherit tmux nixToLua;
         wrapZSH = true;
         wezterm = pkgs.wezterm;
       };
-      tmux_2 = (inputs.wrappers.lib.wrapModule { inherit pkgs; imports = [ ./tmuxModule.nix ]; }).wrapper;
       wezterm = self.packages.${system}.default.override {
         wrapZSH = false;
         autotx = false;

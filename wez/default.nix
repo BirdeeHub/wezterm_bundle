@@ -27,9 +27,7 @@
 }:
 let
 
-  tmuxf = tmux.override (prev: {
-    passthruvars = (prev.passthruvars or []) ++ (builtins.attrNames passables.envVars);
-  });
+  tmuxf = tmux.wrap ({ ... }: { updateEnvironment = builtins.attrNames passables.envVars; });
 
   tx = if custom_tx_script != null then custom_tx_script else writeShellScriptBin "tx" /*bash*/''
     if [[ $(tmux list-sessions -F '#{?session_attached,1,0}' | grep -c '0') -ne 0 ]]; then
