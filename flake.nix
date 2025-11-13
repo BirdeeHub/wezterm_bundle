@@ -15,10 +15,10 @@
     forAllSys = nixpkgs.lib.genAttrs nixpkgs.lib.platforms.all;
   in {
     modules.tmux = import ./tmux.nix inputs;
-    wrapperModules = (inputs.wrappers.lib.evalModule self.modules.tmux).config;
+    wrapperModules.tmux = (inputs.wrappers.lib.evalModule self.modules.tmux).config;
     packages = forAllSys (system: let
       pkgs = import nixpkgs { inherit system; };
-      tmux = (inputs.wrappers.lib.evalModule self.modules.tmux).config.wrap { inherit pkgs;};
+      tmux = self.wrapperModules.tmux.wrap { inherit pkgs;};
     in{
       default = pkgs.callPackage ./wez {
         inherit tmux nixToLua;
