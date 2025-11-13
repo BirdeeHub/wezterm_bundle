@@ -16,9 +16,6 @@ inputs:
   vimVisualKeys = true;
   disableConfirmationPrompt = true;
   configBefore = /*tmux*/ ''
-    bind-key -N "Kill the current window" & kill-window
-    bind-key -N "Kill the current pane" x kill-pane
-
     bind-key -N "Select the previously current window" C-p last-window
     bind-key -N "Switch to the last client" P switch-client -l
 
