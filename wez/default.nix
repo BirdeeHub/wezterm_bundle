@@ -18,7 +18,7 @@ in
     default = "${config.pkgs.zsh}/bin/zsh";
   };
   options.launcher = lib.mkOption {
-    type = wlib.types.stringable;
+    type = lib.types.nullOr wlib.types.stringable;
     default = null;
   };
   options.withLauncher = lib.mkOption {
