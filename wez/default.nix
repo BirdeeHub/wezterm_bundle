@@ -17,6 +17,10 @@ in
     type = wlib.types.stringable;
     default = "${config.pkgs.zsh}/bin/zsh";
   };
+  options.launcher = lib.mkOption {
+    type = wlib.types.stringable;
+    default = null;
+  };
   options.withLauncher = lib.mkOption {
     type = lib.types.bool;
     default = false;
@@ -77,7 +81,7 @@ in
       lib.optional (config.shellString != null) config.shellString
       ++ lib.optionals (config.shellString != null && config.withLauncher) [
         "-c"
-        "exec ${tmuxf}/bin/tx"
+        "exec ${if config.launcher == null then "${tmuxf}/bin/tx" else config.launcher}"
       ];
   };
   config.extraPackages = [ tmuxf ];
