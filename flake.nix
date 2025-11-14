@@ -21,7 +21,7 @@
     packages = forAllSys (system: let
       pkgs = import nixpkgs { inherit system; };
     in{
-      default = self.wrapperModules.wezterm.wrap { inherit pkgs; wrapZSH = true; withLauncher = true; };
+      default = self.wrapperModules.wezterm.wrap ({lib,...}: { inherit pkgs; wrapZSH = lib.mkDefault true; withLauncher = lib.mkDefault true; });
       wezterm = self.wrapperModules.wezterm.wrap { inherit pkgs; };
       tmux = self.wrapperModules.tmux.wrap { inherit pkgs; };
     });
