@@ -54,6 +54,19 @@ inputs:
       '';
     }
   ];
+  extraDrvAttrs.postBuild = let
+    tx = /*bash*/''
+      if [[ $(${placeholder "out"}/bin/tmux list-sessions -F '#{?session_attached,1,0}' | grep -c '0') -ne 0 ]]; then
+        selected_session=$(${placeholder "out"}/bin/tmux list-sessions -F '#{?session_attached,,#{session_name}}' | tr '\n' ' ' | awk '{print $1}')
+        exec ${placeholder "out"}/bin/tmux new-session -At $selected_session
+      else
+        exec ${placeholder "out"}/bin/tmux new-session
+      fi
+    '';
+  in ''
+    echo ${lib.escapeShellArg tx} > $out/bin/tx
+    chmod +x $out/bin/tx
+  '';
 }
 # module code to include with root installs
 # This is required so that tmux can write to /var/run/utmp

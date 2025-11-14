@@ -1,93 +1,87 @@
+inputs:
 {
-  pkgs,
+  config,
   lib,
-  runCommand,
-  symlinkJoin,
-  makeWrapper,
-  writeShellScriptBin,
-  writeText,
-  wezterm,
-  zsh,
-  callPackage,
-  nixToLua,
-  fontpkg ? pkgs.nerd-fonts.fira-mono,
-  fontString ? "FiraMono Nerd Font",
-  tmux,
-  wezcfg ? ./.,
-  autotx ? true,
-  custom_tx_script ? null,
-  zdotdir ? null,
-  wrapZSH ? false,
-  gpuFrontEnd ? "OpenGL", # "Software" | "OpenGL" | "WebGpu"
-  webgpu_power_preference ? "LowPower", # "HighPerformance" | "LowPower"
-  webgpu_force_fallback_adapter ? false,
-  extraPATH ? [ ],
-  extraWrapperArgs ? [],
+  wlib,
   ...
 }:
 let
-
-  tmuxf = tmux.wrap ({ ... }: { updateEnvironment = builtins.attrNames passables.envVars; });
-
-  tx = if custom_tx_script != null then custom_tx_script else writeShellScriptBin "tx" /*bash*/''
-    if [[ $(tmux list-sessions -F '#{?session_attached,1,0}' | grep -c '0') -ne 0 ]]; then
-      selected_session=$(tmux list-sessions -F '#{?session_attached,,#{session_name}}' | tr '\n' ' ' | awk '{print $1}')
-      exec tmux new-session -At $selected_session
-    else
-      exec tmux new-session
-    fi
-  '';
-
-  extraBin = [ tmuxf tx ] ++ extraPATH;
-
-  passables = {
-    cfgdir = runCommand "wezCFG" {} ''
-      mkdir -p $out
-      cp -r ${wezcfg}/* $out/
-    '';
-    fontDirs = [ "${fontpkg}/share/fonts" ];
-    shellString = [
-      "${zsh}/bin/zsh"
-    ] ++ (lib.optionals (tx != null && autotx) [
-      "-c"
-      "exec ${tx}/bin/tx"
-    ]);
-    inherit gpuFrontEnd webgpu_power_preference
-      webgpu_force_fallback_adapter fontString wrapZSH extraBin;
-    envVars = {
-    } // (if wrapZSH then {
-      ZDOTDIR = if zdotdir != null then zdotdir else callPackage ../zdot { };
-    } else {});
+  tmuxf = inputs.self.wrapperModules.tmux.wrap {
+    inherit (config) pkgs;
+    updateEnvironment = builtins.attrNames config.luaInfo.set_environment_variables;
   };
-
-  wezinit = writeText "init.lua" /*lua*/ ''
-    package.preload["nixStuff"] = function()
-      -- mini nixCats plugin
-      return ${nixToLua.toLua passables}
-    end
-    local cfgdir = require('nixStuff').cfgdir
+in
+{
+  imports = [ wlib.wrapperModules.wezterm ];
+  options.shellString = lib.mkOption {
+    type = wlib.types.stringable;
+    default = "${config.pkgs.zsh}/bin/zsh";
+  };
+  options.withLauncher = lib.mkOption {
+    type = lib.types.bool;
+    default = false;
+  };
+  options.gpuFrontEnd = lib.mkOption {
+    type = lib.types.enum [
+      "OpenGL"
+      "Software"
+      "WebGpu"
+    ];
+    default = "OpenGL";
+  };
+  options.webgpu_power_preference = lib.mkOption {
+    type = lib.types.enum [
+      "HighPerformance"
+      "LowPower"
+    ];
+    default = "LowPower";
+  };
+  options.webgpu_force_fallback_adapter = lib.mkOption {
+    type = lib.types.bool;
+    default = false;
+  };
+  options.fontString = lib.mkOption {
+    type = lib.types.str;
+    default = "FiraMono Nerd Font";
+  };
+  options.fontPackage = lib.mkOption {
+    type = lib.types.package;
+    default = config.pkgs.nerd-fonts.fira-mono;
+  };
+  options.wrapZSH = lib.mkOption {
+    type = lib.types.bool;
+    default = false;
+  };
+  options.ZDOTDIR = lib.mkOption {
+    type = lib.types.nullOr wlib.types.stringable;
+    default = config.pkgs.callPackage ../zdot { };
+  };
+  config."wezterm.lua".content = /* lua */ ''
+    local cfgdir = require('nix-info').config_dir
+    require('nix-info').config_dir = nil
     package.path = package.path .. ';' .. cfgdir .. '/?.lua;' .. cfgdir .. '/?/init.lua'
     package.cpath = package.cpath .. ';' .. cfgdir .. '/?.so'
     local wezterm = require 'wezterm'
     wezterm.config_dir = cfgdir
     return require 'init'
   '';
-
-  wrapperArgs = [
-    "--inherit-argv0"
-    "--prefix" "PATH" ":" "${lib.makeBinPath extraBin}"
-    "--add-flags" "--config-file ${wezinit}"
-    "--run" /*bash*/''
-      declare -f __bp_install_after_session_init && source '${placeholder "out"}/etc/profile.d/wezterm.sh'
-    ''
-  ] ++ extraWrapperArgs;
-in
-symlinkJoin {
-  name = "wezterm";
-  nativeBuildInputs = [ makeWrapper ];
-  paths = [ wezterm ];
-  postBuild = ''
-    wrapProgram $out/bin/wezterm ${lib.escapeShellArgs wrapperArgs}
-    wrapProgram $out/bin/wezterm-gui ${lib.escapeShellArgs wrapperArgs}
-  '';
+  config.luaInfo = {
+    config_dir = ./.;
+    set_environment_variables = lib.optionalAttrs config.wrapZSH { inherit (config) ZDOTDIR; };
+    inherit (config) webgpu_power_preference webgpu_force_fallback_adapter;
+    front_end = config.gpuFrontEnd;
+    font_dirs = [ "${config.fontPackage}/share/fonts" ];
+    font = lib.generators.mkLuaInline "wezterm.font(${builtins.toJSON config.fontString})";
+    color_scheme_dirs = [ "${config.luaInfo.config_dir}/colors" ];
+    default_prog =
+      lib.optional (config.shellString != null) config.shellString
+      ++ lib.optionals (config.shellString != null && config.withLauncher) [
+        "-c"
+        "exec ${tmuxf}/bin/tx"
+      ];
+  };
+  config.extraPackages = [ tmuxf ];
+  config.runShell = [
+    "declare -f __bp_install_after_session_init && source '${placeholder "out"}/etc/profile.d/wezterm.sh'"
+  ];
 }
