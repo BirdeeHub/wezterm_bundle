@@ -56,6 +56,7 @@ inputs:
   ];
   extraDrvAttrs.postBuild = let
     tx = /*bash*/''
+      #!${config.pkgs.bash}/bin/bash
       if [[ $(${placeholder "out"}/bin/tmux list-sessions -F '#{?session_attached,1,0}' | grep -c '0') -ne 0 ]]; then
         selected_session=$(${placeholder "out"}/bin/tmux list-sessions -F '#{?session_attached,,#{session_name}}' | tr '\n' ' ' | awk '{print $1}')
         exec ${placeholder "out"}/bin/tmux new-session -At $selected_session
