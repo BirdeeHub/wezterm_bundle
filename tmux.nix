@@ -74,10 +74,10 @@ inputs:
   # Note, this will add a guid wrapper for the group utmp!
   # see programs.tmux.withUtempter
   # module code to include with root installs
-  passthru.nixosModule = {
+  passthru.nixosModule = {pkgs,...}: {
     config.security.wrappers = {
       utempter = {
-        source = "${config.pkgs.libutempter}/lib/utempter/utempter";
+        source = "${pkgs.libutempter}/lib/utempter/utempter";
         owner = "root";
         group = "utmp";
         setuid = false;
