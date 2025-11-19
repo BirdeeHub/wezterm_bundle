@@ -12,7 +12,8 @@ let
   };
 in
 {
-  imports = [ wlib.wrapperModules.wezterm ];
+  imports = [ wlib.modules.makeWrapperNix wlib.wrapperModules.wezterm ];
+  disabledModules = [ "modules/makeWrapper/module.nix" "modules/makeWrapperBase/module.nix" ];
   options.shellString = lib.mkOption {
     type = wlib.types.stringable;
     default = "${config.pkgs.zsh}/bin/zsh";
@@ -60,6 +61,16 @@ in
     type = lib.types.nullOr wlib.types.stringable;
     default = config.pkgs.callPackage ../zdot { };
   };
+  options.extraPackages = lib.mkOption {
+    type = lib.types.listOf lib.types.package;
+    default = [ ];
+    description = ''
+      Additional packages to add to the wrapper's runtime PATH.
+      This is useful if the wrapped program needs additional libraries or tools to function correctly.
+
+      Adds all its entries to the DAG under the name `NIX_PATH_ADDITIONS`
+    '';
+  };
   config."wezterm.lua".content = /* lua */ ''
     local cfgdir = require('nix-info').config_dir
     require('nix-info').config_dir = nil
@@ -85,6 +96,7 @@ in
       ];
   };
   config.extraPackages = [ tmuxf ];
+  config.suffixVar = [ { data = [ "PATH" ":" "${lib.makeBinPath config.extraPackages}" ]; name = "NIX_PATH_ADDITIONS"; } ];
   config.runShell = [
     "declare -f __bp_install_after_session_init && source '${placeholder "out"}/etc/profile.d/wezterm.sh'"
   ];
