@@ -54,7 +54,7 @@ inputs:
       '';
     }
   ];
-  extraDrvAttrs.postBuild = let
+  drv.postBuild = let
     tx = /*bash*/''
       #!${config.pkgs.bash}/bin/bash
       if [[ $(${placeholder "out"}/bin/tmux list-sessions -F '#{?session_attached,1,0}' | grep -c '0') -ne 0 ]]; then
