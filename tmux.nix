@@ -3,6 +3,7 @@ inputs:
   config,
   wlib,
   lib,
+  pkgs,
   ...
 }:
 {
@@ -35,10 +36,10 @@ inputs:
     bind -r -N "Move the visible part of the window right" M-l refresh-client -R 10
   '';
   plugins = [
-    config.pkgs.tmuxPlugins.onedark-theme
+    pkgs.tmuxPlugins.onedark-theme
     {
       plugin = (
-        config.pkgs.tmuxPlugins.mkTmuxPlugin {
+        pkgs.tmuxPlugins.mkTmuxPlugin {
           pluginName = "tmux-navigate";
           version = "master";
           src = inputs.tmux-navigate-src;
@@ -56,7 +57,7 @@ inputs:
   ];
   drv.postBuild = let
     tx = /*bash*/''
-      #!${config.pkgs.bash}/bin/bash
+      #!${pkgs.bash}/bin/bash
       if [[ $(${placeholder "out"}/bin/tmux list-sessions -F '#{?session_attached,1,0}' | grep -c '0') -ne 0 ]]; then
         selected_session=$(${placeholder "out"}/bin/tmux list-sessions -F '#{?session_attached,,#{session_name}}' | tr '\n' ' ' | awk '{print $1}')
         exec ${placeholder "out"}/bin/tmux new-session -At $selected_session

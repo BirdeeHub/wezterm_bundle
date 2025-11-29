@@ -3,11 +3,12 @@ inputs:
   config,
   lib,
   wlib,
+  pkgs,
   ...
 }:
 let
   tmuxf = inputs.self.wrapperModules.tmux.wrap {
-    inherit (config) pkgs;
+    inherit pkgs;
     updateEnvironment = builtins.attrNames config.luaInfo.set_environment_variables;
   };
 in
@@ -15,7 +16,7 @@ in
   imports = [ wlib.wrapperModules.wezterm ];
   options.shellString = lib.mkOption {
     type = wlib.types.stringable;
-    default = "${config.pkgs.zsh}/bin/zsh";
+    default = "${pkgs.zsh}/bin/zsh";
   };
   options.launcher = lib.mkOption {
     type = lib.types.nullOr wlib.types.stringable;
@@ -50,7 +51,7 @@ in
   };
   options.fontPackage = lib.mkOption {
     type = lib.types.package;
-    default = config.pkgs.nerd-fonts.fira-mono;
+    default = pkgs.nerd-fonts.fira-mono;
   };
   options.wrapZSH = lib.mkOption {
     type = lib.types.bool;
@@ -58,7 +59,7 @@ in
   };
   options.ZDOTDIR = lib.mkOption {
     type = lib.types.nullOr wlib.types.stringable;
-    default = config.pkgs.callPackage ../zdot { };
+    default = pkgs.callPackage ../zdot { };
   };
   config."wezterm.lua".content = /* lua */ ''
     local cfgdir = require('nix-info').config_dir
