@@ -50,7 +50,7 @@
         "narHash": "sha256-cQ6+w6DSLCUSwe7Ioqi/8vgcBJV6VxjxQ6huRX88sQA=",
         "owner": "BirdeeHub",
         "repo": "nix-wrapper-modules",
-        "rev": "4b0ce378fad6f2a8319fb5d5bc6422424023d7f8",
+        "rev": "df73044ec6edec3694a3764f3aa201320af59ef3",
         "type": "github"
       },
       "original": {
