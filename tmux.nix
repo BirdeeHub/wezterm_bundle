@@ -74,7 +74,6 @@ inputs:
   # (which can be queried with who to display currently connected user sessions).
   # Note, this will add a guid wrapper for the group utmp!
   # see programs.tmux.withUtempter
-  # module code to include with root installs
   passthru.nixosModule = {pkgs,...}: {
     config.security.wrappers = {
       utempter = {
