@@ -8,15 +8,15 @@ inputs:
 }:
 {
   imports = [ wlib.wrapperModules.tmux ];
-  prefix = "C-Space";
-  terminal = "xterm-256color";
-  terminalOverrides = ",${config.terminal}:RGB";
-  secureSocket = true;
-  statusKeys = "vi";
-  modeKeys = "vi";
-  vimVisualKeys = true;
-  disableConfirmationPrompt = true;
-  configBefore = /*tmux*/ ''
+  config.prefix = "C-Space";
+  config.terminal = "xterm-256color";
+  config.terminalOverrides = ",${config.terminal}:RGB";
+  config.secureSocket = true;
+  config.statusKeys = "vi";
+  config.modeKeys = "vi";
+  config.vimVisualKeys = true;
+  config.disableConfirmationPrompt = true;
+  config.configBefore = /*tmux*/ ''
     bind-key -N "Select the previously current window" C-p last-window
     bind-key -N "Switch to the last client" P switch-client -l
 
@@ -35,7 +35,7 @@ inputs:
     bind -r -N "Move the visible part of the window down" M-k refresh-client -D 10
     bind -r -N "Move the visible part of the window right" M-l refresh-client -R 10
   '';
-  plugins = [
+  config.plugins = [
     pkgs.tmuxPlugins.onedark-theme
     {
       plugin = (
@@ -55,7 +55,7 @@ inputs:
       '';
     }
   ];
-  drv.postBuild = let
+  config.drv.postBuild = let
     tx = /*bash*/''
       #!${pkgs.bash}/bin/bash
       if [[ $(${placeholder "out"}/bin/tmux list-sessions -F '#{?session_attached,1,0}' | grep -c '0') -ne 0 ]]; then
