@@ -74,7 +74,7 @@ inputs:
   # (which can be queried with who to display currently connected user sessions).
   # Note, this will add a guid wrapper for the group utmp!
   # see programs.tmux.withUtempter
-  passthru.nixosModule = {pkgs,...}: {
+  passthru.nixosModule = {
     config.security.wrappers = {
       utempter = {
         source = "${pkgs.libutempter}/lib/utempter/utempter";
